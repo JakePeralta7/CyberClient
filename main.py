@@ -4,6 +4,10 @@ import time
 import requests
 import platform
 import multiprocessing
+
+# Constants
+API_URL = "http://ubuntu-cyber.elad.net:5000/api"
+
 class MetricsCollector(multiprocessing.Process):
     def __init__(self):
         super(MetricsCollector, self).__init__()
@@ -22,32 +26,46 @@ class MetricsCollector(multiprocessing.Process):
             # Getting usage of virtual_memory in GB ( 4th field)
             ram_usage = psutil.virtual_memory()[3] / 1000000000
             print('RAM Used (GB):', ram_usage)
-            current_event = {
-                'cpu_percentage': cpu_percentage,
-                'ram_percentage': ram_percentage,
-                'ram_usage': ram_usage
-            }
-            # send_event()
+            current_event = dict(cpu_percentage=cpu_percentage, ram_percentage=ram_percentage, ram_usage=ram_usage)
+            send_event(event_type='metrics', event=current_event)
+
+
+class Agent(multiprocessing.Process):
+    def __init__(self):
+        super(Agent, self).__init__()
+
+    def run(self):
+        while True:
+            agent_url = f"{API_URL}/agent"
+            last_communication = time.mktime(datetime.datetime.now().timetuple())
+            my_system = platform.uname()
+            host = my_system.node
+            operating_system = my_system.system
+            os_release = my_system.release
+            os_version = my_system.version
+            machine = my_system.machine
+            processor = my_system.processor
+            requests.post(url=agent_url, json=dict(last_communication=last_communication, host=host,
+                                                   operating_system=operating_system, os_release=os_release,
+                                                   os_version=os_version, machine=machine, processor=processor))
+            time.sleep(600)
 
 
 def send_event(event_type: str, event: dict):
-    event_url = "http://ubuntu-cyber.elad.net:5000/api/event"
+    event_url = f"{API_URL}/event"
     current_datetime = time.mktime(datetime.datetime.now().timetuple())
-    my_system = platform.uname()
-    host = my_system.node
-    operating_system = my_system.system
-    os_release = my_system.release
-    os_version = my_system.version
-    machine = my_system.machine
-    processor = my_system.processor
-    a = requests.post(url=event_url, json={'time': current_datetime, 'host': host, 'event_type': event_type,
-                                           'operating_system': operating_system, 'os_release': os_release,
-                                           'os_version': os_version, 'machine': machine, 'processor': processor,
-                                           'event': event})
-    print(a)
+    host = platform.node()
+    try:
+        requests.post(url=event_url, json=dict(time=current_datetime,  event_type=event_type, host=host, event=event))
+    except requests.exceptions.ConnectionError:
+        print("Server isn't available")
 
 
 def main():
+    agent = Agent()
+    agent.start()
+    agent.join()
+
     metrics_collector = MetricsCollector()
     metrics_collector.start()
     metrics_collector.join()
