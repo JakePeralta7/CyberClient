@@ -4,6 +4,7 @@ import time
 import requests
 import platform
 import multiprocessing
+import psutil
 
 
 class MetricsCollector(multiprocessing.Process):
@@ -11,8 +12,9 @@ class MetricsCollector(multiprocessing.Process):
         super(MetricsCollector, self).__init__()
 
     def run(self):
+
         send_event()
-        time.sleep(1)
+        time.sleep(10)
 
 
 def send_event(event: dict):
@@ -32,11 +34,9 @@ def send_event(event: dict):
 
 
 def main():
-    event = {
-        'zibi': True,
-        'semek': False
-    }
-    send_event(event)
+    metrics_collector = MetricsCollector()
+    metrics_collector.start()
+    metrics_collector.join()
 
 
 if __name__ == "__main__":
