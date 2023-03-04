@@ -64,11 +64,9 @@ def send_event(event_type: str, event: dict):
 def main():
     agent = Agent()
     agent.start()
-    agent.join()
 
     metrics_collector = MetricsCollector()
     metrics_collector.start()
-    metrics_collector.join()
 
 
 if __name__ == "__main__":
