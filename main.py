@@ -1,12 +1,11 @@
 # Imports
 import datetime
 import time
+import requests
 
-# assigned regular string date
-date_time = datetime.datetime(2021, 7, 26, 21, 20)
-
-# print regular python date&time
-print("date_time =>",date_time)
+unix_timestamp = time.mktime(datetime.datetime.now().timetuple())
+url = "http://10.0.0.98:5000/"
+requests.post()
 
 # displaying unix timestamp after conversion
-print("unix_timestamp => ", (time.mktime(date_time.timetuple())))
+print("unix_timestamp => ", unix_timestamp)
