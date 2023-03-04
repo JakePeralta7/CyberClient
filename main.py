@@ -8,6 +8,7 @@ import multiprocessing
 # Constants
 API_URL = "http://ubuntu-cyber.elad.net:5000/api"
 
+
 class MetricsCollector(multiprocessing.Process):
     def __init__(self):
         super(MetricsCollector, self).__init__()
