@@ -4,6 +4,8 @@ import time
 import requests
 import platform
 import multiprocessing
+import pyuac
+import psutil
 
 # Constants
 API_URL = "http://ubuntu-cyber.elad.net:5000/api"
@@ -71,7 +73,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-
-
-import psutil
+    if not pyuac.isUserAdmin():
+        print("Re-launching as admin!")
+        pyuac.runAsAdmin()
+    else:
+        main()
